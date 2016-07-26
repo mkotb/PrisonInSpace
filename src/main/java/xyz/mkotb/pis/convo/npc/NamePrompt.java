@@ -35,6 +35,6 @@ public class NamePrompt extends StringPrompt {
         npc.setName(s);
 
         ((Player) conversationContext.getForWhom()).sendMessage("Successfully set the name of this NPC!");
-        return ((boolean) conversationContext.getSessionData("continue")) ? new EnchantmentPrompt() : null;
+        return ((boolean) conversationContext.getSessionData("continue")) ? NPCModificationType.POSITION.prompt() : null;
     }
 }

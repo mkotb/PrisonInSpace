@@ -17,13 +17,11 @@ package xyz.mkotb.pis.npc;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Villager;
 
 public class PrisonTradeNPC {
     private String name;
     private Location location;
-    private Enchantment enchantment;
 
     public int spawn() {
         Villager villager = location.getWorld().spawn(location, Villager.class);
@@ -48,13 +46,5 @@ public class PrisonTradeNPC {
 
     public void setLocation(Location location) {
         this.location = location;
-    }
-
-    public Enchantment enchantment() {
-        return enchantment;
-    }
-
-    public void setEnchantment(Enchantment enchantment) {
-        this.enchantment = enchantment;
     }
 }

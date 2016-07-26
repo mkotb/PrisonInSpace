@@ -19,6 +19,7 @@ import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.conversations.StringPrompt;
 import org.bukkit.entity.Player;
+import xyz.mkotb.pis.PrisonInSpacePlugin;
 import xyz.mkotb.pis.npc.PrisonTradeNPC;
 
 public class PositionPrompt extends StringPrompt {
@@ -37,6 +38,12 @@ public class PositionPrompt extends StringPrompt {
         npc.setLocation(((Player) conversationContext.getForWhom()).getLocation());
 
         ((Player) conversationContext.getForWhom()).sendMessage("Successfully set the npc location!");
+
+        if (((boolean) conversationContext.getSessionData("continue"))) {
+            PrisonInSpacePlugin.instance().npcListener().add(npc);
+            PrisonInSpacePlugin.instance().data().npcs().add(npc);
+        }
+
         return null;
     }
 }

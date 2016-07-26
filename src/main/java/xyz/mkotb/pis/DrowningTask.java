@@ -40,6 +40,10 @@ public class DrowningTask extends BukkitRunnable {
             return; // don't ask why this would happen
         }
 
+        if (PrisonInSpacePlugin.instance().isInSpawn(player.getLocation())) {
+            return;
+        }
+
         player.damage(2.0); // mmm....
     }
 

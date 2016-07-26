@@ -19,8 +19,7 @@ import org.bukkit.conversations.Prompt;
 
 public enum NPCModificationType {
     NAME(new NamePrompt()),
-    POSITION(new PositionPrompt()),
-    ENCHANTMENT(new EnchantmentPrompt());
+    POSITION(new PositionPrompt());
 
     private Prompt prompt;
 

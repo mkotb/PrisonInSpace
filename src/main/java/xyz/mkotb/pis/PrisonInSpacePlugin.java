@@ -15,22 +15,33 @@
  */
 package xyz.mkotb.pis;
 
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldguard.bukkit.WGBukkit;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.conversations.ConversationFactory;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import xyz.mkotb.configapi.ConfigFactory;
 import xyz.mkotb.pis.convo.npc.NPCModificationType;
 import xyz.mkotb.pis.data.MainConfig;
 import xyz.mkotb.pis.data.DataConfig;
+import xyz.mkotb.pis.npc.NPCListener;
 
 import java.util.HashMap;
 
 public class PrisonInSpacePlugin extends JavaPlugin {
+    public static final Enchantment[] ENCHANTMENTS = {Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.DIG_SPEED, Enchantment.ARROW_DAMAGE, Enchantment.ARROW_INFINITE, Enchantment.MENDING, Enchantment.DURABILITY};
     private static PrisonInSpacePlugin instance;
+    private Economy economy;
     private ConversationFactory npcFactory;
     private ConfigFactory configFactory = ConfigFactory.newFactory(this);
+    private NPCListener npcListener;
     private MainConfig config;
     private DataConfig data;
 
@@ -46,7 +57,14 @@ public class PrisonInSpacePlugin extends JavaPlugin {
         data = configFactory.fromFile("data", DataConfig.class);
         npcFactory = new ConversationFactory(this)
                 .withFirstPrompt(NPCModificationType.NAME.prompt())
-                .withInitialSessionData(new HashMap<Object, Object>() {{put("continue", true);}});
+                .withInitialSessionData(new HashMap<Object, Object>() {{
+                    put("continue", true);
+                }});
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        economy = rsp.getProvider();
+        npcListener = new NPCListener().init();
+
+        Bukkit.getPluginManager().registerEvents(npcListener, this);
     }
 
     @Override
@@ -64,6 +82,34 @@ public class PrisonInSpacePlugin extends JavaPlugin {
 
     public DataConfig data() {
         return data;
+    }
+
+    public NPCListener npcListener() {
+        return npcListener;
+    }
+
+    public boolean isInSpawn(Location location) {
+        return WGBukkit.getRegionManager(location.getWorld())
+                .getApplicableRegionsIDs(new Vector(location.getX(), location.getY(), location.getZ()))
+                .contains("spawn");
+    }
+
+    public double balanceFor(Player player) {
+        return economy.getBalance(player);
+    }
+
+    public int affordLevel(double balanceD, Enchantment enchantment) {
+        int balance = (int) balanceD;
+
+        if (balance < config().pricePerLevel()) {
+            return -1;
+        }
+
+        return Math.max((int) Math.floor(balance / config().pricePerLevel()), enchantment.getMaxLevel());
+    }
+
+    public Economy economy() {
+        return economy;
     }
 
     @Override
