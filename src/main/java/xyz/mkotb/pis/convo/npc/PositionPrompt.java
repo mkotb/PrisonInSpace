@@ -41,7 +41,9 @@ public class PositionPrompt extends StringPrompt {
 
         if (((boolean) conversationContext.getSessionData("continue"))) {
             PrisonInSpacePlugin.instance().npcListener().add(npc);
-            PrisonInSpacePlugin.instance().data().npcs().add(npc);
+            PrisonInSpacePlugin.instance().data().npcs().put(npc.id(), npc);
+        } else {
+            npc.updateEntity();
         }
 
         return null;

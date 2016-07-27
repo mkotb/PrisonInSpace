@@ -39,7 +39,7 @@ public class NPCListener implements Listener {
     }
 
     public NPCListener init() {
-        plugin.data().npcs().forEach(this::add);
+        plugin.data().npcs().values().forEach(this::add);
         return this;
     }
 

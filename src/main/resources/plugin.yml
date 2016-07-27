@@ -2,3 +2,6 @@ name: 'PrisonInSpace'
 author: MazenK
 version: 1.0
 main: xyz.mkotb.pis.PrisonInSpacePlugin
+commands:
+  pisnpc:
+    description: Setup a PrisonInSpace NPC.

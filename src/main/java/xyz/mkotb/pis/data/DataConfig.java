@@ -20,24 +20,22 @@ import xyz.mkotb.pis.DrowningTask;
 import xyz.mkotb.pis.npc.PrisonTradeNPC;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @HeaderComments({"This is a data file",
         "Unexpected behaviour may be encountered if modified manually"})
 public class DataConfig {
-    private List<PrisonTradeNPC> npcs = new ArrayList<>();
+    private Map<String, PrisonTradeNPC> npcs = new HashMap<>();
     private List<DrowningTask> savedTasks = new ArrayList<>();
 
     public List<DrowningTask> savedTasks() {
         return savedTasks;
     }
 
-    public List<PrisonTradeNPC> npcs() {
+    public Map<String, PrisonTradeNPC> npcs() {
         return npcs;
-    }
-
-    public void setNpcs(List<PrisonTradeNPC> npcs) {
-        this.npcs = npcs;
     }
 
     public void setSavedTasks(List<DrowningTask> savedTasks) {

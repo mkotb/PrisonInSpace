@@ -20,8 +20,10 @@ import org.bukkit.Location;
 import org.bukkit.entity.Villager;
 
 public class PrisonTradeNPC {
+    private String id;
     private String name;
     private Location location;
+    private transient Villager entity;
 
     public int spawn() {
         Villager villager = location.getWorld().spawn(location, Villager.class);
@@ -29,7 +31,23 @@ public class PrisonTradeNPC {
         villager.setCustomName(ChatColor.translateAlternateColorCodes('&', name));
         villager.setCustomNameVisible(true);
 
+        this.entity = villager;
         return villager.getEntityId();
+    }
+
+    public void updateEntity() {
+        if (entity != null) {
+            entity.setCustomName(ChatColor.translateAlternateColorCodes('&', name));
+            entity.teleport(location);
+        }
+    }
+
+    public String id() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String name() {

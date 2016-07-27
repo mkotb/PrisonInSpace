@@ -28,12 +28,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import xyz.mkotb.configapi.ConfigFactory;
-import xyz.mkotb.pis.convo.npc.NPCModificationType;
+import xyz.mkotb.pis.convo.npc.InitialNPCPrompt;
 import xyz.mkotb.pis.data.MainConfig;
 import xyz.mkotb.pis.data.DataConfig;
 import xyz.mkotb.pis.npc.NPCListener;
-
-import java.util.HashMap;
 
 public class PrisonInSpacePlugin extends JavaPlugin {
     public static final Enchantment[] ENCHANTMENTS = {Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.DIG_SPEED, Enchantment.ARROW_DAMAGE, Enchantment.ARROW_INFINITE, Enchantment.MENDING, Enchantment.DURABILITY};
@@ -56,10 +54,8 @@ public class PrisonInSpacePlugin extends JavaPlugin {
         config = configFactory.fromFile("config", MainConfig.class);
         data = configFactory.fromFile("data", DataConfig.class);
         npcFactory = new ConversationFactory(this)
-                .withFirstPrompt(NPCModificationType.NAME.prompt())
-                .withInitialSessionData(new HashMap<Object, Object>() {{
-                    put("continue", true);
-                }});
+                .withFirstPrompt(InitialNPCPrompt.INSTANCE)
+                .withEscapeSequence("exit");
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         economy = rsp.getProvider();
         npcListener = new NPCListener().init();
@@ -114,7 +110,7 @@ public class PrisonInSpacePlugin extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if ("npc".equalsIgnoreCase(command.getName())) {
+        if ("pisnpc".equalsIgnoreCase(command.getName())) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage("no");
                 return false;
@@ -125,25 +121,8 @@ public class PrisonInSpacePlugin extends JavaPlugin {
                 return false;
             }
 
-            if (args.length == 0) {
-                npcFactory.buildConversation((Player) sender).begin();
-                return true;
-            }
-
-            NPCModificationType mod;
-
-            try {
-                mod = NPCModificationType.valueOf(args[0].toUpperCase());
-            } catch (IllegalArgumentException ex) {
-                sender.sendMessage(args[0] + " is not a valid modification type; use one of the following: name, position, enchantment");
-                return false;
-            }
-
-            new ConversationFactory(this)
-                    .withInitialSessionData(new HashMap<Object, Object>() {{put("continue", false);}})
-                    .withFirstPrompt(mod.prompt())
-                    .buildConversation((Player) sender)
-                    .begin();
+            npcFactory.buildConversation((Player) sender).begin();
+            return true;
         }
         return false;
     }
