@@ -17,29 +17,23 @@ package xyz.mkotb.pis.convo.npc;
 
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
-import org.bukkit.conversations.ValidatingPrompt;
-import xyz.mkotb.pis.PrisonInSpacePlugin;
+import org.bukkit.conversations.StringPrompt;
+import xyz.mkotb.pis.npc.PrisonTradeNPC;
 
-public class IDPrompt extends ValidatingPrompt {
+public class IDPrompt extends StringPrompt {
     public static final IDPrompt INSTANCE = new IDPrompt();
 
     @Override
-    protected boolean isInputValid(ConversationContext conversationContext, String s) {
-        return PrisonInSpacePlugin.instance().data().npcs().containsKey(s) || "back".equalsIgnoreCase(s);
-    }
-
-    @Override
-    protected Prompt acceptValidatedInput(ConversationContext conversationContext, String s) {
-        if ("back".equalsIgnoreCase(s)) {
-            return InitialNPCPrompt.INSTANCE;
-        }
-
-        conversationContext.setSessionData("npc", PrisonInSpacePlugin.instance().data().npcs().get(s));
-        return ModifyOptionsPrompt.INSTANCE;
-    }
-
-    @Override
     public String getPromptText(ConversationContext conversationContext) {
-        return "Please send the name of the NPC you want to modify (if you wish to go back, send 'back', to exit, send 'exit')!";
+        return "Please enter the id you want this NPC to have.";
+    }
+
+    @Override
+    public Prompt acceptInput(ConversationContext conversationContext, String s) {
+        PrisonTradeNPC npc = new PrisonTradeNPC();
+
+        npc.setId(s);
+        conversationContext.setSessionData("npc", npc);
+        return NPCModificationType.NAME.prompt();
     }
 }

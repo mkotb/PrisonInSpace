@@ -44,6 +44,12 @@ public class DrowningTask extends BukkitRunnable {
             return;
         }
 
+        if (PrisonInSpacePlugin.instance().playerListener().checkSlots(player.getInventory())) {
+            PrisonInSpacePlugin.instance().playerListener().removePlayer(playerId);
+            cancel();
+            return;
+        }
+
         player.damage(2.0); // mmm....
     }
 

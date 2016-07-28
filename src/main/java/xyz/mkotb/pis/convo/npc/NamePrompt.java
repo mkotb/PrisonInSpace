@@ -30,15 +30,7 @@ public class NamePrompt extends StringPrompt {
     @Override
     public Prompt acceptInput(ConversationContext conversationContext, String s) {
         boolean cont = ((boolean) conversationContext.getSessionData("continue"));
-        PrisonTradeNPC npc;
-
-        if (conversationContext.getAllSessionData().containsKey("npc")) {
-            npc = (PrisonTradeNPC) conversationContext.getSessionData("npc");
-        } else {
-            npc = new PrisonTradeNPC();
-
-            conversationContext.setSessionData("npc", npc);
-        }
+        PrisonTradeNPC npc = (PrisonTradeNPC) conversationContext.getSessionData("npc");;
 
         npc.setName(s);
         ((Player) conversationContext.getForWhom()).sendMessage("Successfully set the name of this NPC!");

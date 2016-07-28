@@ -18,29 +18,28 @@ package xyz.mkotb.pis.convo.npc;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.conversations.ValidatingPrompt;
+import xyz.mkotb.pis.PrisonInSpacePlugin;
 
-public class InitialNPCPrompt extends ValidatingPrompt {
-    public static final InitialNPCPrompt INSTANCE = new InitialNPCPrompt();
+public class AskIDPrompt extends ValidatingPrompt {
+    public static final AskIDPrompt INSTANCE = new AskIDPrompt();
 
     @Override
     protected boolean isInputValid(ConversationContext conversationContext, String s) {
-        return "modify".equalsIgnoreCase(s) || "add".equalsIgnoreCase(s);
+        return PrisonInSpacePlugin.instance().data().npcs().containsKey(s) || "back".equalsIgnoreCase(s);
     }
 
     @Override
     protected Prompt acceptValidatedInput(ConversationContext conversationContext, String s) {
-        switch (s.toLowerCase()) {
-            case "modify":
-                conversationContext.setSessionData("continue", false);
-                return AskIDPrompt.INSTANCE;
-            default:
-                conversationContext.setSessionData("continue", true);
-                return IDPrompt.INSTANCE;
+        if ("back".equalsIgnoreCase(s)) {
+            return InitialNPCPrompt.INSTANCE;
         }
+
+        conversationContext.setSessionData("npc", PrisonInSpacePlugin.instance().data().npcs().get(s));
+        return ModifyOptionsPrompt.INSTANCE;
     }
 
     @Override
     public String getPromptText(ConversationContext conversationContext) {
-        return "Would you like to modify or add a new NPC?";
+        return "Please send the name of the NPC you want to modify (if you wish to go back, send 'back', to exit, send 'exit')!";
     }
 }

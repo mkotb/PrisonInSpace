@@ -17,12 +17,18 @@ package xyz.mkotb.pis.npc;
 
 import io.mazenmc.menuapi.MenuFactory;
 import io.mazenmc.menuapi.menu.Menu;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import xyz.mkotb.pis.PrisonInSpacePlugin;
 
 import java.util.ArrayList;
@@ -48,6 +54,20 @@ public class NPCListener implements Listener {
     }
 
     @EventHandler
+    public void onDamage(EntityDamageEvent event) {
+        if (npcStore.containsKey(event.getEntity().getEntityId())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        if (event.getInventory().getType() == InventoryType.MERCHANT) {
+            event.setCancelled(true); // no villager inventories
+        }
+    }
+
+    @EventHandler
     public void onInteract(PlayerInteractAtEntityEvent event) {
         PrisonTradeNPC npc = npcStore.get(event.getRightClicked().getEntityId());
 
@@ -55,9 +75,17 @@ public class NPCListener implements Listener {
             return;
         }
 
+        event.setCancelled(true);
         ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
+
+        if (item == null || item.getType() == Material.AIR) {
+            event.getPlayer().sendMessage(plugin.config().cannotEnchantMessage());
+            return;
+        }
+
         Map<Enchantment, Integer> applicable = new HashMap<>();
         double balance = plugin.balanceFor(event.getPlayer()); // saved in-case of DB queries for balance
+        boolean canEnchantItem = false;
 
         for (Enchantment enchantment : PrisonInSpacePlugin.ENCHANTMENTS) {
             if (enchantment.canEnchantItem(item)) {
@@ -66,20 +94,36 @@ public class NPCListener implements Listener {
                 if (affordLevel != -1) {
                     applicable.put(enchantment, affordLevel);
                 }
+
+                canEnchantItem = true;
             }
         }
 
-        event.setCancelled(true);
+        if (!canEnchantItem) {
+            event.getPlayer().sendMessage(plugin.config().cannotEnchantMessage());
+            return;
+        }
 
         if (applicable.isEmpty()) {
             event.getPlayer().sendMessage(plugin.config().insufficientMoneyEnchant());
             return;
         }
 
+        Map<Enchantment, Integer> newApplicable = new HashMap<>();
+
+        applicable.entrySet().stream().filter((e) -> (e.getValue() - item.getEnchantmentLevel(e.getKey())) != 0)
+                .forEach((e) -> newApplicable.put(e.getKey(), e.getValue()));
+        applicable = newApplicable;
+
+        if (applicable.isEmpty()) {
+            event.getPlayer().sendMessage(plugin.config().fullEnchantMessage());
+            return;
+        }
+
         int index = -1;
         int menuRows = (int) Math.ceil(applicable.size() / 9D) - 1;
-        int lastRowLow = (int) Math.floor((9 - (applicable.size() - ((menuRows - 1) * 9))) / 2);
-        Menu menu = MenuFactory.createMenu(plugin.config().enchantmentMenuTitle(), menuRows * 9);
+        int lastRowLow = (int) Math.floor((9 - (applicable.size() - (menuRows * 9))) / 2);
+        Menu menu = MenuFactory.createMenu(plugin.config().enchantmentMenuTitle(), (menuRows + 1) * 9);
         List<Map.Entry<Enchantment, Integer>> entryList = new ArrayList<>(applicable.entrySet());
 
         for (int y = 0; y < menuRows; y++) {
@@ -88,13 +132,28 @@ public class NPCListener implements Listener {
             }
         }
 
-        int lastRowSize = entryList.size() - index;
+        int sub = index;
+
+        if (sub == -1) {
+            sub = 0;
+        }
+
+        int lastRowSize = (entryList.size() - sub) + lastRowLow;
+
+        if ((lastRowLow) != (9 - lastRowSize)) {
+            lastRowLow = 0;
+            lastRowSize = (entryList.size() - sub);
+        }
 
         for (int x = lastRowLow; x < lastRowSize; x++) {
             addItem(x, menuRows, entryList.get(++index), menu, item);
         }
 
-        menu.showTo(event.getPlayer());
+        Bukkit.getScheduler().runTask(PrisonInSpacePlugin.instance(), () -> menu.showTo(event.getPlayer()));
+    }
+
+    public void despawn() {
+        npcStore.values().forEach(PrisonTradeNPC::kill);
     }
 
     private void addItem(int x, int y, Map.Entry<Enchantment, Integer> entry, Menu menu, ItemStack stack) {
@@ -111,11 +170,17 @@ public class NPCListener implements Listener {
         // charge
         int price = addLevel * plugin.config().pricePerLevel();
         ItemStack item = player.getInventory().getItemInMainHand();
+        ItemMeta meta = item.getItemMeta();
 
         plugin.economy().withdrawPlayer(player, price);
-        item.removeEnchantment(enchant);
-        item.addEnchantment(enchant, level);
+
+        meta.removeEnchant(enchant);
+        meta.addEnchant(enchant, level, true);
+        item.setItemMeta(meta);
+
+        player.getInventory().setItemInMainHand(item);
         player.closeInventory();
+
         player.sendMessage(String.format(plugin.config().purchaseMessage(), plugin.config().enchantmentDisplay(enchant),
                 level, price));
     }

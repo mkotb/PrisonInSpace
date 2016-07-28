@@ -15,11 +15,19 @@
  */
 package xyz.mkotb.pis.npc;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Villager;
+import xyz.mkotb.configapi.internal.InternalsHelper;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 public class PrisonTradeNPC {
+    private transient static final String NMS_PREFIX = "net.minecraft.server." + Bukkit.getServer().getClass().getPackage()
+            .getName().replace(".", ",").split(",")[3] + ".";
     private String id;
     private String name;
     private Location location;
@@ -32,7 +40,30 @@ public class PrisonTradeNPC {
         villager.setCustomNameVisible(true);
 
         this.entity = villager;
+
+        try {
+            Object handle = villager.getClass().getMethod("getHandle").invoke(villager);
+            Class<?> methodProfilerCls = Class.forName(NMS_PREFIX + "MethodProfiler");
+            Constructor goalSelectorConstructor = Class.forName(NMS_PREFIX + "PathfinderGoalSelector")
+                    .getConstructor(methodProfilerCls);
+            Field goalSelectorField = handle.getClass().getField("goalSelector");
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+
+            modifiersField.setAccessible(true);
+            InternalsHelper.setField("modifiers", goalSelectorField, goalSelectorField.getModifiers()
+                    & ~Modifier.FINAL); // remove final field
+            InternalsHelper.setField(goalSelectorField, handle, goalSelectorConstructor.newInstance(InternalsHelper.newInstance(methodProfilerCls)));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
         return villager.getEntityId();
+    }
+
+    public void kill() {
+        if (entity != null) {
+            entity.remove(); // bye lol
+        }
     }
 
     public void updateEntity() {

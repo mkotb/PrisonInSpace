@@ -40,9 +40,9 @@ public class PrisonInSpacePlugin extends JavaPlugin {
     private ConversationFactory npcFactory;
     private ConfigFactory configFactory = ConfigFactory.newFactory(this);
     private NPCListener npcListener;
+    private PrisonPlayerListener playerListener;
     private MainConfig config;
     private DataConfig data;
-
 
     public static PrisonInSpacePlugin instance() {
         return instance;
@@ -59,12 +59,16 @@ public class PrisonInSpacePlugin extends JavaPlugin {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         economy = rsp.getProvider();
         npcListener = new NPCListener().init();
+        playerListener = new PrisonPlayerListener().load();
 
         Bukkit.getPluginManager().registerEvents(npcListener, this);
+        Bukkit.getPluginManager().registerEvents(playerListener, this);
     }
 
     @Override
     public void onDisable() {
+        npcListener.despawn();
+        playerListener.save();
         instance = null;
         npcFactory = null;
         configFactory.save("config", config);
@@ -84,6 +88,10 @@ public class PrisonInSpacePlugin extends JavaPlugin {
         return npcListener;
     }
 
+    public PrisonPlayerListener playerListener() {
+        return playerListener;
+    }
+
     public boolean isInSpawn(Location location) {
         return WGBukkit.getRegionManager(location.getWorld())
                 .getApplicableRegionsIDs(new Vector(location.getX(), location.getY(), location.getZ()))
@@ -101,7 +109,7 @@ public class PrisonInSpacePlugin extends JavaPlugin {
             return -1;
         }
 
-        return Math.max((int) Math.floor(balance / config().pricePerLevel()), enchantment.getMaxLevel());
+        return Math.min((int) Math.floor(balance / config().pricePerLevel()), enchantment.getMaxLevel());
     }
 
     public Economy economy() {

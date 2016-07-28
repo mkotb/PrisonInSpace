@@ -48,6 +48,12 @@ public class MainConfig {
     @Comments({"The message sent when a player purchases an enchant",
             "The %s is the enchantment name, the first %d is the level, the second is the price"})
     private String purchaseMessage = "&3You have purchased %s %d for %d";
+    @Coloured
+    @Comment("The message sent when a player has applied all enchants on their item")
+    private String fullEnchantMessage = "&6You have already completely maxed out all enchants on your item!";
+    @Coloured
+    @Comment("The message sent when a player cannot enchant the item given")
+    private String cannotEnchantMessage = "&4This item cannot be enchanted!";
     @Comment("The price per level of an enchantment")
     private int pricePerLevel = 5;
 
@@ -71,8 +77,16 @@ public class MainConfig {
         return enchantmentName;
     }
 
+    public String cannotEnchantMessage() {
+        return cannotEnchantMessage;
+    }
+
     public String purchaseMessage() {
         return purchaseMessage;
+    }
+
+    public String fullEnchantMessage() {
+        return fullEnchantMessage;
     }
 
     public String insufficientMoneyEnchant() {
