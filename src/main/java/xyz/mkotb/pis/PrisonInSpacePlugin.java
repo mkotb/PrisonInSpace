@@ -34,7 +34,7 @@ import xyz.mkotb.pis.data.DataConfig;
 import xyz.mkotb.pis.npc.NPCListener;
 
 public class PrisonInSpacePlugin extends JavaPlugin {
-    public static final Enchantment[] ENCHANTMENTS = {Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.DIG_SPEED, Enchantment.ARROW_DAMAGE, Enchantment.ARROW_INFINITE, Enchantment.MENDING, Enchantment.DURABILITY};
+    public static final Enchantment[] ENCHANTMENTS = {Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.DIG_SPEED, Enchantment.ARROW_DAMAGE, Enchantment.ARROW_INFINITE, Enchantment.MENDING, Enchantment.DURABILITY, Enchantment.DAMAGE_ALL};
     private static PrisonInSpacePlugin instance;
     private Economy economy;
     private ConversationFactory npcFactory;
