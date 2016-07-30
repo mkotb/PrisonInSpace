@@ -73,6 +73,10 @@ public class PrisonTradeNPC {
         }
     }
 
+    public Villager entity() {
+        return entity;
+    }
+
     public String id() {
         return id;
     }

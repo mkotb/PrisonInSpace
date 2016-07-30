@@ -24,7 +24,7 @@ public class InitialNPCPrompt extends ValidatingPrompt {
 
     @Override
     protected boolean isInputValid(ConversationContext conversationContext, String s) {
-        return "modify".equalsIgnoreCase(s) || "add".equalsIgnoreCase(s);
+        return "modify".equalsIgnoreCase(s) || "add".equalsIgnoreCase(s) || "delete".equalsIgnoreCase(s);
     }
 
     @Override
@@ -32,6 +32,11 @@ public class InitialNPCPrompt extends ValidatingPrompt {
         switch (s.toLowerCase()) {
             case "modify":
                 conversationContext.setSessionData("continue", false);
+                conversationContext.setSessionData("after_id", ModifyOptionsPrompt.INSTANCE);
+                return AskIDPrompt.INSTANCE;
+            case "delete":
+                conversationContext.setSessionData("continue", false);
+                conversationContext.setSessionData("after_id", DeletePrompt.INSTANCE);
                 return AskIDPrompt.INSTANCE;
             default:
                 conversationContext.setSessionData("continue", true);
@@ -41,6 +46,6 @@ public class InitialNPCPrompt extends ValidatingPrompt {
 
     @Override
     public String getPromptText(ConversationContext conversationContext) {
-        return "Would you like to modify or add a new NPC?";
+        return "Would you like to modify or add or delete an NPC?";
     }
 }

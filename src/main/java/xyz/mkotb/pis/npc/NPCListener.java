@@ -53,6 +53,11 @@ public class NPCListener implements Listener {
         npcStore.put(npc.spawn(), npc);
     }
 
+    public void remove(PrisonTradeNPC npc) {
+        npcStore.remove(npc.entity().getEntityId());
+        npc.kill();
+    }
+
     @EventHandler
     public void onDamage(EntityDamageEvent event) {
         if (npcStore.containsKey(event.getEntity().getEntityId())) {
