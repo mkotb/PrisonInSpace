@@ -56,6 +56,10 @@ public class MainConfig {
     private String cannotEnchantMessage = "&4This item cannot be enchanted!";
     @Comment("The price per level of an enchantment")
     private int pricePerLevel = 5;
+    @Coloured
+    @Comments({"The added lore message for the price",
+            "%d is the price"})
+    private String priceLore = "&6Cost: &a%d";
 
     public int damageInterval() {
         return damageInterval;
@@ -99,7 +103,8 @@ public class MainConfig {
         String enchantmentDisplay = enchantmentDisplay(enchantment);
 
         meta.addStoredEnchant(enchantment, level, true);
-        meta.setLore(Lists.newArrayList(String.format(enchantmentLore, enchantmentDisplay, addLevel)));
+        meta.setLore(Lists.newArrayList(String.format(enchantmentLore, enchantmentDisplay, addLevel),
+                String.format(priceLore, (addLevel * pricePerLevel()))));
         meta.setDisplayName(String.format(enchantmentName, enchantmentDisplay));
 
         stack.setItemMeta(meta);
